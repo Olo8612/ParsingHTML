@@ -15,13 +15,15 @@ import org.jsoup.select.Elements;
 public class Parser {
 
 	String url;
+	String urlDomainName;
 
 	public Parser(String url) {
 		this.url = url;
+		this.urlDomainName = getUrlDomainName(url);
 	}
 
-	public List<String> getTagFromURL() {
-		List<String> attributes = new ArrayList<String>();
+	public List<Element> getTagFromURL() {
+		List<Element> attributes = new ArrayList<Element>();
 		Map<String, Long> countedAttributes = new HashMap<String, Long>();
 		Connection conn = Jsoup.connect(this.url);
 		int counter = 0;
@@ -35,6 +37,7 @@ public class Parser {
 				} else {
 					System.out.println(element.attr("abs:href"));
 					String domainOfElement = getUrlDomainName(element.attr("abs:href"));
+					attributes.add(element);
 					if(countedAttributes.containsKey(domainOfElement)){
 						countedAttributes.computeIfPresent(domainOfElement, (key, value) -> value + 1L);
 					} else {
@@ -48,7 +51,7 @@ public class Parser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		System.out.println(counter);
+		System.out.println("Weenętrznych linków:" + counter);
 		System.out.println(countedAttributes.toString());
 		return attributes;
 
@@ -57,13 +60,9 @@ public class Parser {
 	public boolean isInnerLink(Element element) {
 		String arg = element.attr("abs:href");
 
-		String match = "";
-		try {
-			match = arg.substring(0, this.url.length());
-		} catch (StringIndexOutOfBoundsException f) {
-			return false;
-		}
-		if (this.url.equals(match)) {
+		String match = getUrlDomainName(arg);
+				
+		if (match.contains(urlDomainName)) {
 			return true;
 		} else {
 			return false;
